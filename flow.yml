@@ -719,19 +719,6 @@ components:
         - $ref: '#/components/schemas/FullFlowInfoExtension'
         - $ref: '#/components/schemas/FlowExtension'
 
-    SearchFlowContent:
-      description: A set of flows matching criterias, provided into the request
-      type: object
-      properties:
-        limit:
-          type: integer
-        filters:
-          $ref: '#/components/schemas/SearchFlowFilters'
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/Flow'
-
     CallbackParameters:
       type: object
       required:
@@ -912,7 +899,133 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/SearchFlowContent'
+            description: A set of flows matching criterias, provided into the request
+            type: object
+            properties:
+              limit:
+                type: integer
+              filters:
+                $ref: '#/components/schemas/SearchFlowFilters'
+              results:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    trackingId:
+                      description: 'The tracking id is an external identifier and is used to track the flow by the sender'
+                      type: string
+                      maxLength: 64
+                      nullable: true
+                    name:
+                      description: Name of the file
+                      type: string
+                      maxLength: 255
+                    processingRule:
+                      type: string
+                      description: |
+                        - B2B                 : e-invoicing
+                        - B2BInt              : International B2B e-reporting
+                        - B2C                 : B2C e-reporting
+                        - B2G                 : e-invoicing for B2G sales
+                        - B2GInt
+                        - OutOfScope          : Out of scope (not regulated flow)
+                        - B2GOutOfScope
+                        - ArchiveOnly         : Archive only, no transmission
+                        - NotApplicable       : Not Applicable
+                      enum:
+                        - B2B
+                        - B2BInt
+                        - B2C
+                        - B2G
+                        - B2GInt
+                        - OutOfScope
+                        - B2GOutOfScope
+                        - ArchiveOnly
+                        - NotApplicable
+                      nullable: true
+                    flowSyntax:
+                      $ref: '#/components/schemas/FlowSyntax'
+                    flowProfile:
+                      type: string
+                      enum:
+                        - Basic
+                        - CIUS
+                        - Extended-CTC-FR
+                      nullable: true
+                    flowId:
+                      $ref: '#/components/schemas/NotOnlyUuid'
+                    submittedAt:
+                      description: |
+                        The flow submission date and time (the date and time when the flow was created on the system)
+                        This property should be used by the API consumer as a time reference to avoid clock synchronization issues
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      description: |
+                        The last update date and time of the flow. When the flow is submitted updatedAt is equal to submittedAt.
+                        When the flow acknowledgment status is changed updatedAt date and time is updated.
+                      type: string
+                      format: date-time
+                    flowType:
+                      description: |
+                        - `CustomerInvoice`: a non-self-billed outgoing invoice or a self-billed incoming invoice
+                        - `SupplierInvoice`: a non-self-billed incoming invoice or self-billed outgoing invoice
+                        - `StateInvoice`: an invoice Flow sent to DFH
+                        - `CustomerInvoiceLC`: a lifecycle (CDAR) related to a customer invoice
+                        - `SupplierInvoiceLC`: a lifecycle (CDAR) related to supplier invoice
+                        - `StateCustomerInvoiceLC`: a customer invoice LC sent to DFH
+                        - `StateSupplierInvoiceLC`: a supplier invoice LC sent to DFH
+                        - `AggregatedCustomerTransactionReport` : a transaction E-Reporting flow containing aggregated B2C sales (FRR 10.3)
+                        - `IndividualCustomerTransactionReport`: a transaction E-Reporting flow containing international B2B sales or a B2C transaction flow reported individually (FRR 10.1)
+                        - `AggregatedCustomerPaymentReport` : a E-Reporting of collections flow containing collections linked to B2C sales (FRR 10.4)
+                        - `UnitaryCustomerPaymentReport` : an E-Reporting of collections flow containing collections linked to unit international B2B sales or B2C sales (FRR 10.2)
+                        - `UnitarySupplierTransactionReport`: a transaction E-Reporting flow containing international B2B purchases (FRR 10.1)
+                        - `MultiFlowReport`: an E-Reporting flow which contains at least 2 different flow types (FRR 10)
+                      type: string
+                      enum:
+                        - CustomerInvoice
+                        - SupplierInvoice
+                        - StateInvoice
+                        - CustomerInvoiceLC
+                        - SupplierInvoiceLC
+                        - StateCustomerInvoiceLC
+                        - StateSupplierInvoiceLC
+                        - AggregatedCustomerTransactionReport
+                        - UnitaryCustomerTransactionReport
+                        - AggregatedCustomerPaymentReport
+                        - UnitaryCustomerPaymentReport
+                        - UnitarySupplierTransactionReport
+                        - MultiFlowReport
+                      example: SupplierInvoice
+                      nullable: true
+                    processingRuleSource:
+                      description: "Says whether the processing rule has been computed or the processing rule was an input parameter"
+                      type: string
+                      enum:
+                        - Input
+                        - Computed
+                      nullable: true
+                    flowDirection:
+                      $ref: '#/components/schemas/FlowDirection'
+                    acknowledgement:
+                      $ref: '#/components/schemas/Acknowledgement'
+                  required:
+                    - trackingId
+                    - name
+                    - processingRule
+                    - flowSyntax
+                    - flowProfile
+                    - flowId
+                    - submittedAt
+                    - updatedAt
+                    - flowType
+                    - processingRuleSource
+                    - flowDirection
+                    - acknowledgement
+            required:
+              - limit
+              - filters
+              - results
 
     FlowPostResponse:
       description: |
